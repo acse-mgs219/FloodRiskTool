@@ -179,8 +179,7 @@ def WGS84toOSGB36(latitude, longitude, radians=False):
 
     #transform the cartesan coor back to latitude&longitude under os datum
     osLatitude,osLongitude=xyz_to_lat_long(x,y,z,radians,datum=osgb36)    
-    return osLatitude,osLongitude
-
+    return np.array((osLatitude,osLongitude))
 
 def get_easting_northing_from_lat_long(latitude, longitude, radians=False):
     """ Convert GPS (latitude, longitude) to OS (easting, northing).
@@ -209,8 +208,8 @@ def get_easting_northing_from_lat_long(latitude, longitude, radians=False):
     (https://webarchive.nationalarchives.gov.uk/20081023180830/http://www.ordnancesurvey.co.uk/oswebsite/gps/information/coordinatesystemsinfo/guidecontents/index.html)
     """ 
 
-    #os_latitude, os_longitude = WGS84toOSGB36(latitude, longitude, radians)
-    os_latitude, os_longitude = latitude, longitude
+    os_latitude, os_longitude = WGS84toOSGB36(latitude, longitude, False)
+    #os_latitude, os_longitude = latitude, longitude
 
     # Set up variables to be used
     rho = osgb36.a*osgb36.F_0*(1-osgb36.e2)/((1-osgb36.e2*(sin(os_latitude))**2))**(3/2)
@@ -258,14 +257,9 @@ def get_easting_northing_from_lat_long(latitude, longitude, radians=False):
     
     # seven
     east_north = np.zeros(2)
-    east_north[1] = northing = one + two*(os_longitude - osgb36.lam_0)**2 + three*(os_longitude - osgb36.lam_0)**4 + three_a*(os_longitude - osgb36.lam_0)**6
-    east_north[0] = easting = osgb36.E_0 + four*(os_longitude - osgb36.lam_0) + five*(os_longitude - osgb36.lam_0)**3 + six*(os_longitude - osgb36.lam_0)**5
+    east_north[1] = one + two*(os_longitude - osgb36.lam_0)**2 + three*(os_longitude - osgb36.lam_0)**4 + three_a*(os_longitude - osgb36.lam_0)**6
+    east_north[0] = osgb36.E_0 + four*(os_longitude - osgb36.lam_0) + five*(os_longitude - osgb36.lam_0)**3 + six*(os_longitude - osgb36.lam_0)**5
 
-    #print("%f \n %f \n %f \n %f \n %f \n %f \n %f" % (one, two, three, three_a, four, five, six))
-    easting = np.around(easting, 3)
-    northing = np.around(northing,3)
-<<<<<<< HEAD
     return east_north
-=======
-    return east_north
->>>>>>> 5e7f16d284d045702b957932264eff74165e9f3e
+
+#print(get_easting_northing_from_lat_long(51.372809, 0.668769, True))
