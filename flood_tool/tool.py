@@ -1,5 +1,5 @@
 """Locator functions to interact with geographic data"""
-
+import pandas as pd
 __all__ = ['Tool']
 
 class Tool(object):
@@ -20,7 +20,17 @@ class Tool(object):
         postcode_file : str, optional
             Filename of a .csv file containing property value data for postcodes.
         """
-        pass
+        self.get_lat_long_lst = []
+        self.df_postcode_file = pd.read_csv('resources/' + postcode_file, header=1, names=["Postcode", "Lat", "Long"],
+                                            encoding='utf-8')
+        self.df_risk_file = pd.read_csv('resources/' + risk_file, encoding='utf-8')
+        self.df_values_file = pd.read_csv('resources/' + values_file, encoding='utf-8')
+        self.cat_pst_values = self.df_postcode_file.append(self.df_values_file, ignore_index=True, sort=False)
+
+        print(self.df_postcode_file.head())
+        print(self.df_risk_file.head())
+        print(self.df_values_file.head())
+        print("read 3 file successfully")
 
 
     def get_lat_long(self, postcodes):
@@ -39,11 +49,30 @@ class Tool(object):
             Array of Nx2 (latitude, longitdue) pairs for the input postcodes.
             Invalid postcodes return [`numpy.nan`, `numpy.nan`].
         """
-
-        raise NotImplementedError
+        """
+        # df_left = self.df_postcode_file
+        # df_right = self.df_values_file
+        # result = pd.merge(df_left, df_right, on=['Postcode'], how='inner')
+        # print(len(df_left))
+        # print(len(df_right))
+        # print(len(result))
+        # mask = result['Postcode'].values == postcodes
+        # print(result[mask])
+        # print(result[result.index[mask], 'Long'])
+        # print(self.df_postcode_file.query('Postcode == postcodes'))
+        # self.cat_pst_values = self.df_postcode_file.append(self.df_values_file, ignore_index=True, sort=False)
+        """
+        print(self.cat_pst_values[self.cat_pst_values['Postcode'].isin(postcodes)])
+        lst = self.cat_pst_values[self.cat_pst_values['Postcode'].isin(postcodes)].index.tolist()
+        for idx in lst:
+            self.get_lat_long_lst.append([self.cat_pst_values.loc[idx, 'Lat'], self.cat_pst_values.loc[idx, 'Long']])
+        print(lst)
+        print(self.get_lat_long_lst)
+        print("get_lat_long OK")
 
 
     def get_easting_northing_flood_probability_band(self, easting, northing):
+
         """Get an array of flood risk probabilities from arrays of eastings and northings.
 
         Flood risk data is extracted from the Tool flood risk file. Locations
@@ -64,7 +93,9 @@ class Tool(object):
         numpy.ndarray of strs
             numpy array of flood probability bands corresponding to input locations.
         """
-        raise NotImplementedError
+        lst = self.df_risk_file[self.df_risk_file['Postcode'].isin(postcodes)].index.tolist()
+        self.df_risk_file
+
 
 
     def get_sorted_flood_probability(self, postcodes):
