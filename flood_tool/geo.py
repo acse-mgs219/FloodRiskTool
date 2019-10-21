@@ -264,4 +264,8 @@ def get_easting_northing_from_lat_long(latitude, longitude, radians=False):
     #print("%f \n %f \n %f \n %f \n %f \n %f \n %f" % (one, two, three, three_a, four, five, six))
     easting = np.around(easting, 3)
     northing = np.around(northing,3)
+<<<<<<< HEAD
     return east_north
+=======
+    return east_north
+>>>>>>> 5e7f16d284d045702b957932264eff74165e9f3e
