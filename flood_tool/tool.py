@@ -21,6 +21,7 @@ class Tool(object):
             Filename of a .csv file containing property value data for postcodes.
         """
         self.get_lat_long_lst = []
+        self.get_e_n_flood_prob_band = []
         self.df_postcode_file = pd.read_csv('resources/' + postcode_file, header=1, names=["Postcode", "Lat", "Long"],
                                             encoding='utf-8')
         self.df_risk_file = pd.read_csv('resources/' + risk_file, encoding='utf-8')
@@ -69,10 +70,7 @@ class Tool(object):
         print(lst)
         print(self.get_lat_long_lst)
         print("get_lat_long OK")
-<<<<<<< HEAD
         return self.get_lat_long_lst
-=======
->>>>>>> 9b98e3b8abc94669c6a84856862696cebb3060b8
 
 
     def get_easting_northing_flood_probability_band(self, easting, northing):
@@ -97,18 +95,16 @@ class Tool(object):
         numpy.ndarray of strs
             numpy array of flood probability bands corresponding to input locations.
         """
-<<<<<<< HEAD
         lst = self.df_risk_file[self.df_risk_file['X'].isin(easting)] & self.df_risk_file[self.df_risk_file['Y'].isin(northing)]
         lst = lst.index.tolist()
 
-        if not len(lst):
+        for idx in lst:
+            # add algorithm
+            self.get_e_n_flood_prob_band.append([self.df_risk_file.loc[idx, 'prob_4band']])
+        if len(lst) == 0:
             return ['Zero']
         return [self.df_risk_file.loc[lst[0], 'prob_4band']]
 
-=======
-        lst = self.df_risk_file[self.df_risk_file['Postcode'].isin(postcodes)].index.tolist()
-        self.df_risk_file
->>>>>>> 9b98e3b8abc94669c6a84856862696cebb3060b8
 
 
 
