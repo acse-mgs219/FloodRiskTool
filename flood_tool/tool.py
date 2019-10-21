@@ -69,7 +69,10 @@ class Tool(object):
         print(lst)
         print(self.get_lat_long_lst)
         print("get_lat_long OK")
+<<<<<<< HEAD
         return self.get_lat_long_lst
+=======
+>>>>>>> 9b98e3b8abc94669c6a84856862696cebb3060b8
 
 
     def get_easting_northing_flood_probability_band(self, easting, northing):
@@ -94,6 +97,7 @@ class Tool(object):
         numpy.ndarray of strs
             numpy array of flood probability bands corresponding to input locations.
         """
+<<<<<<< HEAD
         lst = self.df_risk_file[self.df_risk_file['X'].isin(easting)] & self.df_risk_file[self.df_risk_file['Y'].isin(northing)]
         lst = lst.index.tolist()
 
@@ -101,6 +105,10 @@ class Tool(object):
             return ['Zero']
         return [self.df_risk_file.loc[lst[0], 'prob_4band']]
 
+=======
+        lst = self.df_risk_file[self.df_risk_file['Postcode'].isin(postcodes)].index.tolist()
+        self.df_risk_file
+>>>>>>> 9b98e3b8abc94669c6a84856862696cebb3060b8
 
 
 
