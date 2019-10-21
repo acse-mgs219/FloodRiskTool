@@ -165,17 +165,8 @@ WGS84toOSGB36transform = HelmertTransform(20.4894e-6,
 def WGS84toOSGB36(latitude, longitude, radians=False):
     """ Wrapper to transform (latitude, longitude) pairs
     from GPS to OS datum."""
-    #get the cartesan coordinates under wgs84 datum
-    Xwgs84=lat_long_to_xyz(latitude,longitude,datum=wgs84) 
-    Xosgb36=WGS84toOSGB36transform(Xwgs84)
-    x=Xosgb36[0]
-    y=Xosgb36[1]
-    z=Xosgb36[2]
 
-    #transform the cartesan coor back to latitude&longitude under os datum
-    osLatitude,osLongitude=xyz_to_lat_long(x,y,z,datum=osgb36)    
-    return osLatitude,osLongitude
-     
+    raise NotImplementedError    
 
 
 def get_easting_northing_from_lat_long(latitude, longitude, radians=False):
@@ -204,23 +195,5 @@ def get_easting_northing_from_lat_long(latitude, longitude, radians=False):
     A guide to coordinate systems in Great Britain 
     (https://webarchive.nationalarchives.gov.uk/20081023180830/http://www.ordnancesurvey.co.uk/oswebsite/gps/information/coordinatesystemsinfo/guidecontents/index.html)
     """ 
-    osLatitude,osLongitude=WGS84toOSGB36(latitude,longitude)
-    rho=osgb36.a*osgb36.F_0*(1-osgb36.e2)/(1-osgb36.e2*(sin(osLatitude))**2)**(3/2)
-    nu = osgb36.a*osgb36.F_0/sqrt(1-osgb36.e2*sin(osLatitude)**2)
-    
-    nie=sqrt(nu/rho-1)
-    n=osgb36.n
-    M=osgb36.b*osgb36.F_0*((1+n+5/4*(n)**2+5/4*(n)**3)*(osLatitude-osgb36.phi_0)
-    -(3*n+3*(n)**2+21/8*(n)**3)*sin(osLatitude-osgb36.phi_0)*cos(osLatitude+osgb36.phi_0)
-    +(15/8*(n)**2+15/8*(n)**3)*sin(2*(osLatitude-osgb36.phi_0))*cos(2*osLatitude+2*osgb36.phi_0)
-    -35/24*(n)**3*sin(3*osLatitude-3*osgb36.phi_0)*cos(3*osLatitude+3*osgb36.phi_0))
-    I=M+osgb36.N_0
-    II=nu/2*sin(osLatitude)*cos(osLatitude)
-    III=nu/24*sin(osLatitude)*(cos(osLatitude)**3)*(5-tan(osLatitude)**2+9*(nie)**2)
-    
 
-"""To summarise: for a simple datum change of latitude and longitude coordinates from datum A to datum B, 
-first convert to Cartesian coordinates (formulae in annexe B) taking all ellipsoid heights as zero 
-and using the ellipsoid parameters of datum A; then apply a Helmert transformation from datum A to datum B using equation (3); 
-finally convert back to latitude and longitude using the ellipsoid parameters of datum B (formulae in annexe C), 
-discarding the datum B ellipsoid height."""
+    raise NotImplementedError
