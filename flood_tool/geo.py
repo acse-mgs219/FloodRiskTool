@@ -165,8 +165,15 @@ WGS84toOSGB36transform = HelmertTransform(20.4894e-6,
 def WGS84toOSGB36(latitude, longitude, radians=False):
     """ Wrapper to transform (latitude, longitude) pairs
     from GPS to OS datum."""
+    Xwgs84=lat_long_to_xyz(latitude,longitude,datum=wgs84) 
+    Xosgb36=WGS84toOSGB36transform(Xwgs84)
+    x=Xosgb36[0]
+    y=Xosgb36[1]
+    z=Xosgb36[2]
 
-    raise NotImplementedError    
+    #transform the cartesan coor back to latitude&longitude under os datum
+    osLatitude,osLongitude=xyz_to_lat_long(x,y,z,datum=osgb36)    
+    return osLatitude,osLongitude
 
 
 def get_easting_northing_from_lat_long(latitude, longitude, radians=False):
@@ -196,4 +203,52 @@ def get_easting_northing_from_lat_long(latitude, longitude, radians=False):
     (https://webarchive.nationalarchives.gov.uk/20081023180830/http://www.ordnancesurvey.co.uk/oswebsite/gps/information/coordinatesystemsinfo/guidecontents/index.html)
     """ 
 
-    raise NotImplementedError
+    os_latitude, os_longitude = WGS84toOSGB36(latitude,longitude, radians)
+
+    # Set up variables to be used
+    rho = osgb36.a*osgb36.F_0*(1-osgb36.e2)/(1-osgb36.e2*(sin(os_latitude))**2)**(3/2)
+    nu = osgb36.a*osgb36.F_0/sqrt(1-osgb36.e2*sin(os_latitude)**2)
+    nie = nu/rho-1
+    
+    n=osgb36.n
+    M=osgb36.b*osgb36.F_0*((1+n+5/4*(n)**2+5/4*(n)**3)*(os_latitude-osgb36.phi_0)
+    -(3*n+3*(n)**2+21/8*(n)**3)*sin(os_latitude-osgb36.phi_0)*cos(os_latitude+osgb36.phi_0)
+    +(15/8*(n)**2+15/8*(n)**3)*sin(2*(os_latitude-osgb36.phi_0))*cos(2*os_latitude+2*osgb36.phi_0)
+    -35/24*(n)**3*sin(3*os_latitude-3*osgb36.phi_0)*cos(3*os_latitude+3*osgb36.phi_0))
+
+    # one
+    one = M+osgb36.N_0
+
+    # two
+    two = nu/2*sin(os_latitude)*cos(os_latitude)
+
+    # three
+    coeff = nu / 24
+    out = sin(os_latitude)*(cos(os_latitude)**3)
+    inn = 5 - tan(os_latitude)**2 + 9*(nie)
+    three = coeff*out*inn
+    
+    # three_a
+    coeff = coeff / 30
+    out = out * cos(os_latitude)**2
+    inn = 61 - (58*tan(os_latitude)**2) + tan(os_latitude)**4
+    three_a = coeff * out * inn
+    
+    # four
+    four = nu * cos(os_latitude)
+
+    # five
+    out = (nu / 6) * cos(os_latitude)**3
+    inn = (nu / rho) - tan(os_latitude)**2
+    five = out*inn
+
+    # six
+    out = (nu / 120) * cos(os_latitude)**5
+    inn = 5 - 18*tan(os_latitude)**2 + tan(os_latitude)**4 + 14*nie - 58*nie*tan(os_latitude)**2
+    six = out*inn
+    
+    # seven
+    Northing = one + two*(os_longitude - osgb36.lam_0)**2 + three*(os_longitude - osgb36.lam_0)**4 + three_a*(os_longitude - osgb36.lam_0)**6
+    Easting = osgb36.E_0 + four*(os_longitude - osgb36.lam_0) + five*(os_longitude - osgb36.lam_0)**3 + six*(os_longitude - osgb36.lam_0)**5
+
+    return Easting, Northing
