@@ -1,6 +1,7 @@
 """Module implementing various geodetic transformation functions."""
 
 from numpy import array, sin, cos, tan, sqrt, pi, arctan2, floor
+import numpy as np
 
 __all__ = ['get_easting_northing_from_lat_long',
            'WGS84toOSGB36']
@@ -208,18 +209,21 @@ def get_easting_northing_from_lat_long(latitude, longitude, radians=False):
     (https://webarchive.nationalarchives.gov.uk/20081023180830/http://www.ordnancesurvey.co.uk/oswebsite/gps/information/coordinatesystemsinfo/guidecontents/index.html)
     """ 
 
-    os_latitude, os_longitude = WGS84toOSGB36(latitude, longitude, radians)
+    #os_latitude, os_longitude = WGS84toOSGB36(latitude, longitude, radians)
+    os_latitude, os_longitude = latitude, longitude
 
     # Set up variables to be used
     rho = osgb36.a*osgb36.F_0*(1-osgb36.e2)/((1-osgb36.e2*(sin(os_latitude))**2))**(3/2)
     nu = osgb36.a*osgb36.F_0/sqrt(1-osgb36.e2*sin(os_latitude)**2)
+    #print(nu)
     nie = nu/rho-1
     
     n = osgb36.n
     M = osgb36.b*osgb36.F_0*((1+n+(5/4)*((n)**2)+(5/4)*((n)**3))*(os_latitude-osgb36.phi_0)
     -(3*n+3*(n)**2+(21/8)*(n)**3)*sin(os_latitude-osgb36.phi_0)*cos(os_latitude+osgb36.phi_0)
     +(15/8*(n)**2+15/8*(n)**3)*sin(2*(os_latitude-osgb36.phi_0))*cos(2*os_latitude+2*osgb36.phi_0)
-    -35/24*(n)**3*sin(3*os_latitude-3*osgb36.phi_0)*cos(3*os_latitude+3*osgb36.phi_0))
+    -(35/24*(n)**3)*sin(3*os_latitude-3*osgb36.phi_0)*cos(3*os_latitude+3*osgb36.phi_0))
+    #print(M)
 
     # one
     one = M+osgb36.N_0
@@ -253,7 +257,11 @@ def get_easting_northing_from_lat_long(latitude, longitude, radians=False):
     six = out*inn
     
     # seven
-    Northing = one + two*(os_longitude - osgb36.lam_0)**2 + three*(os_longitude - osgb36.lam_0)**4 + three_a*(os_longitude - osgb36.lam_0)**6
-    Easting = osgb36.E_0 + four*(os_longitude - osgb36.lam_0) + five*(os_longitude - osgb36.lam_0)**3 + six*(os_longitude - osgb36.lam_0)**5
+    east_north = np.zeros(2)
+    east_north[1] = northing = one + two*(os_longitude - osgb36.lam_0)**2 + three*(os_longitude - osgb36.lam_0)**4 + three_a*(os_longitude - osgb36.lam_0)**6
+    east_north[0] = easting = osgb36.E_0 + four*(os_longitude - osgb36.lam_0) + five*(os_longitude - osgb36.lam_0)**3 + six*(os_longitude - osgb36.lam_0)**5
 
-    return Easting, Northing
+    #print("%f \n %f \n %f \n %f \n %f \n %f \n %f" % (one, two, three, three_a, four, five, six))
+    easting = np.around(easting, 3)
+    northing = np.around(northing,3)
+    return east_north
