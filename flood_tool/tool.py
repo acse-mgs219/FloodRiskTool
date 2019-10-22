@@ -1,5 +1,5 @@
 """Locator functions to interact with geographic data"""
-
+import pandas as pd
 __all__ = ['Tool']
 
 class Tool(object):
@@ -20,7 +20,32 @@ class Tool(object):
         postcode_file : str, optional
             Filename of a .csv file containing property value data for postcodes.
         """
-        pass
+        self.get_lat_long_lst = []
+        self.get_e_n_flood_prob_band = []
+        self.df_postcode_file = pd.read_csv( postcode_file)
+        self.df_risk_file = pd.read_csv( risk_file)
+        self.df_values_file = pd.read_csv( values_file)
+
+        #formatting the postcode column of postcodes file
+        self.df_postcode_file.Postcode=self.df_postcode_file.Postcode.str.replace(' ','') #delete space in postcodes strings
+        self.df_postcode_file.Postcode=self.df_postcode_file.Postcode.str.strip()
+        self.df_postcode_file.Postcode=self.df_postcode_file.Postcode.str.upper()
+
+        #formatting the postcode column of property file
+        self.df_values_file.Postcode=self.df_values_file.Postcode.str.replace(' ','') #delete space in postcodes strings
+        self.df_values_file.Postcode=self.df_values_file.Postcode.str.strip()
+        self.df_values_file.Postcode=self.df_values_file.Postcode.str.upper()
+
+        self.cat_pst_values = self.df_postcode_file.append(self.df_values_file, ignore_index=True, sort=False)
+        
+        
+        print(self.df_postcode_file.head(n=14))
+        print(self.df_risk_file.head())
+        print(self.df_values_file.head())
+        print("read 3 file successfully")
+
+        
+
 
 
     def get_lat_long(self, postcodes):
@@ -151,3 +176,6 @@ class Tool(object):
             Invalid postcodes and duplicates are removed.
         """
         raise NotImplementedError
+
+#tool=Tool(postcode_file="C:/Users/50319/OneDrive/Documents/acse/acse-4-flood-tool-mersey/flood_tool/postcodes.csv",risk_file="C:/Users/50319/OneDrive/Documents/acse/acse-4-flood-tool-mersey/flood_tool/flood_probability.csv",
+#values_file="C:/Users/50319/OneDrive/Documents/acse/acse-4-flood-tool-mersey/flood_tool/property_value.csv")
