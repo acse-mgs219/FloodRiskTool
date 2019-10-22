@@ -22,15 +22,15 @@ class Tool(object):
         postcode_file : str, optional
             Filename of a .csv file containing property value data for postcodes.
         """
-        self.get_lat_long_lst = []
-        self.get_e_n_flood_prob_band = []
-        self.flood_risk = []
+        # self.get_lat_long_lst = []
+        # self.get_e_n_flood_prob_band = []
+        # self.flood_risk = []
 
         # read postcodes.csv
         if postcode_file == None:
             self.df_postcode_file = pd.read_csv("./resources/postcodes.csv")
         else:
-            self.df_postcode_file = pd.read_csv("./resources/" + postcode_file)
+            self.df_postcode_file = pd.read_csv(postcode_file)
         # formatting the postcode column of postcodes file
         self.df_postcode_file.Postcode = self.df_postcode_file.Postcode.str.replace(' ',
                                                                                     '')  # delete space in postcodes strings
@@ -42,13 +42,14 @@ class Tool(object):
         if risk_file == None:
             self.df_risk_file = pd.read_csv("./resources/flood_probability.csv")
         else:
-            self.df_risk_file = pd.read_csv("./resources/" + risk_file)
+            self.df_risk_file = pd.read_csv(risk_file)
+        del self.df_risk_file['Unnamed: 0']
 
         # read property_value.csv
         if values_file == None:
             self.df_values_file = pd.read_csv("./resources/property_value.csv")
         else:
-            self.df_values_file = pd.read_csv("./resources/" + values_file)
+            self.df_values_file = pd.read_csv(values_file)
         # formatting the postcode column of property file
         self.df_values_file.Postcode = self.df_values_file.Postcode.str.replace(' ',
                                                                                 '')  # delete space in postcodes strings
@@ -79,7 +80,7 @@ class Tool(object):
 
         Returns
         -------
-       
+
         ndarray
             Array of Nx2 (latitude, longitdue) pairs for the input postcodes.
             Invalid postcodes return [`numpy.nan`, `numpy.nan`].
@@ -113,7 +114,7 @@ class Tool(object):
 
         Returns
         -------
-       
+
         numpy.ndarray of strs
             numpy array of flood probability bands corresponding to input locations.
         """
@@ -124,12 +125,11 @@ class Tool(object):
         # pro： nparray of probability
         # inputcor: nparray of input points' coordinates
         # outputcor: nparray
-        df = pd.read_csv("resources/flood_probability.csv",
-                         header=1, names=["Del", "X", "Y", "prob_4band", "radius"])
-        cor1x = np.array(df.drop(['Del', 'Y', 'prob_4band', 'radius'], axis=1))
-        cor1y = np.array(df.drop(['Del', 'X', 'prob_4band', 'radius'], axis=1))
-        pro = np.array(df.drop(['Del', 'X', 'Y', 'radius'], axis=1))
-        r = np.array(df.drop(['Del', 'X', 'Y', 'prob_4band'], axis=1))
+        df = self.df_risk_file
+        cor1x = np.array(df.drop(['Y', 'prob_4band', 'radius'], axis=1))
+        cor1y = np.array(df.drop(['X', 'prob_4band', 'radius'], axis=1))
+        pro = np.array(df.drop(['X', 'Y', 'radius'], axis=1))
+        r = np.array(df.drop(['X', 'Y', 'prob_4band'], axis=1))
         outputpro = []
         # normalize
         pro[pro == "High"] = 4
@@ -153,17 +153,6 @@ class Tool(object):
 
         return outputpro
 
-        # 000
-        """lst = self.df_risk_file[self.df_risk_file['X'].isin(easting) & self.df_risk_file['Y'].isin(northing)]
-        print(lst)
-        lst = lst.index.tolist()
-
-        for idx in lst:
-            # add algorithm
-            self.get_e_n_flood_prob_band.append([self.df_risk_file.loc[idx, 'prob_4band']])
-        if len(lst) == 0:
-            return ['Zero']
-        return [self.df_risk_file.loc[lst[0], 'prob_4band']]"""
 
 
 
@@ -172,7 +161,7 @@ class Tool(object):
         """Get an array of flood risk probabilities from a sequence of postcodes.
 
         Probability is ordered High>Medium>Low>Very low>Zero.
-        Flood risk data is extracted from the `Tool` flood risk file. 
+        Flood risk data is extracted from the `Tool` flood risk file.
 
         Parameters
         ----------
@@ -182,7 +171,7 @@ class Tool(object):
 
         Returns
         -------
-       
+
         pandas.DataFrame
             Dataframe of flood probabilities indexed by postcode and ordered from `High` to `Zero`,
             then by lexagraphic (dictionary) order on postcode. The index is named `Postcode`, the
@@ -204,7 +193,7 @@ class Tool(object):
 
         Returns
         -------
-       
+
         numpy.ndarray of floats
             array of floats for the pound sterling cost for the input postcodes.
             Invalid postcodes return `numpy.nan`.
@@ -230,27 +219,28 @@ class Tool(object):
 
         Returns
         -------
-       
+
         numpy.ndarray
             array of floats for the annual flood risk in pounds sterling for the input postcodes.
             Invalid postcodes return `numpy.nan`.
         """
+        flood_risk = []
         reduce_cost = 0.05
         postcodes = [postcode.replace(' ', '').upper().strip() for postcode in postcodes]
         for i in range(len(postcodes)):
             if postcodes[i] in self.cat_pst_values.index:
-                self.flood_risk.append(self.cat_pst_values['Total Value'][postcodes[i]].tolist())
+                flood_risk.append(self.cat_pst_values['Total Value'][postcodes[i]].tolist())
                 if probability_bands[i] == 'High':
-                    self.flood_risk[i] = self.flood_risk[i] * reduce_cost * 1 / 10
+                    flood_risk[i] = flood_risk[i] * reduce_cost * 1 / 10
                 elif probability_bands[i] == 'Medium':
-                    self.flood_risk[i] = self.flood_risk[i] * reduce_cost * 1 / 50
+                    flood_risk[i] = flood_risk[i] * reduce_cost * 1 / 50
                 elif probability_bands[i] == 'Low':
-                    self.flood_risk[i] = self.flood_risk[i] * reduce_cost * 1 / 100
+                    flood_risk[i] = flood_risk[i] * reduce_cost * 1 / 100
                 else:
-                    self.flood_risk[i] = 0.
+                    flood_risk[i] = 0.
             else:
-                self.flood_risk.append(np.nan)
-        return np.array(self.flood_risk)
+                flood_risk.append(np.nan)
+        return np.array(flood_risk)
 
     def get_sorted_annual_flood_risk(self, postcodes):
         """Get a sorted pandas DataFrame of flood risks.
@@ -263,7 +253,7 @@ class Tool(object):
 
         Returns
         -------
-       
+
         pandas.DataFrame
             Dataframe of flood risks indexed by (normalized) postcode and ordered by risk,
             then by lexagraphic (dictionary) order on the postcode. The index is named
