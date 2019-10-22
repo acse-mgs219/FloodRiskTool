@@ -91,12 +91,6 @@ class Tool(object):
         indices = self.cat_pst_values.loc[postcodes, ['Latitude', 'Longitude']]
         return indices.values
 
-        """
-        postcodes = [pc.upper() for pc in postcodes]
-        postcodes = [pc.replace(' ', '') if len(pc) > 7 else pc for pc in postcodes]
-        indices = self.cat_pst_values.loc[postcodes, ['Latitude', 'Longitude']]
-        return indices.values
-        """
 
 
 
@@ -245,7 +239,7 @@ class Tool(object):
         postcodes = [postcode.replace(' ', '').upper().strip() for postcode in postcodes]
         for i in range(len(postcodes)):
             if postcodes[i] in self.cat_pst_values.index:
-                self.flood_risk.append(self.cat_pst_values['Total_value'][postcodes[i]].tolist())
+                self.flood_risk.append(self.cat_pst_values['Total Value'][postcodes[i]].tolist())
                 if probability_bands[i] == 'High':
                     self.flood_risk[i] = self.flood_risk[i] * reduce_cost * 1 / 10
                 elif probability_bands[i] == 'Medium':
