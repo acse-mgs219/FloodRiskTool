@@ -25,7 +25,9 @@ class Tool(object):
         self.get_lat_long_lst = []
         self.get_e_n_flood_prob_band = []
         self.df_postcode_file = pd.read_csv( postcode_file)
-        self.df_risk_file = pd.read_csv( risk_file,index_col=False)
+        self.df_risk_file = pd.read_csv( risk_file,usecols=[1,2,3,4]) #get rid of the index col of this file
+        self.df_risk_file=self.df_risk_file.reset_index() #reset the index column
+        self.df_risk_file=self.df_risk_file.drop(['index'],axis=1)
         self.df_values_file = pd.read_csv( values_file)
 
         #formatting the postcode column of postcodes file
@@ -41,8 +43,8 @@ class Tool(object):
         self.cat_pst_values = self.df_postcode_file.append(self.df_values_file, ignore_index=True, sort=False)
         
         
-        print(self.df_postcode_file.head(n=14))
-        print(self.df_risk_file.head())
+        print(self.df_postcode_file.head())
+        print(self.df_risk_file.head(n=23))
         print(self.df_values_file.head())
         print("read 3 file successfully")
 
