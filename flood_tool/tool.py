@@ -22,13 +22,25 @@ class Tool(object):
         """
         self.get_lat_long_lst = []
         self.get_e_n_flood_prob_band = []
-        self.df_postcode_file = pd.read_csv('resources/' + postcode_file, header=1, names=["Postcode", "Lat", "Long"],
-                                            encoding='utf-8')
-        self.df_risk_file = pd.read_csv('resources/' + risk_file, encoding='utf-8')
-        self.df_values_file = pd.read_csv('resources/' + values_file, encoding='utf-8')
+        self.df_postcode_file = pd.read_csv('resources/' + postcode_file, header=1, names=["Postcode", "Lat", "Long"])
+        self.df_risk_file = pd.read_csv('resources/' + risk_file)
+        self.df_values_file = pd.read_csv('resources/' + values_file)
+
+        # formatting the postcode column of postcodes file
+        self.df_postcode_file.Postcode = self.df_postcode_file.Postcode.str.replace(' ',
+                                                                                    '')  # delete space in postcodes strings
+        self.df_postcode_file.Postcode = self.df_postcode_file.Postcode.str.strip()
+        self.df_postcode_file.Postcode = self.df_postcode_file.Postcode.str.upper()
+
+        # formatting the postcode column of property file
+        self.df_values_file.Postcode = self.df_values_file.Postcode.str.replace(' ',
+                                                                                '')  # delete space in postcodes strings
+        self.df_values_file.Postcode = self.df_values_file.Postcode.str.strip()
+        self.df_values_file.Postcode = self.df_values_file.Postcode.str.upper()
+
         self.cat_pst_values = self.df_postcode_file.append(self.df_values_file, ignore_index=True, sort=False)
 
-        print(self.df_postcode_file.head())
+        print(self.df_postcode_file.head(n=14))
         print(self.df_risk_file.head())
         print(self.df_values_file.head())
         print("read 3 file successfully")
@@ -63,6 +75,7 @@ class Tool(object):
         # print(self.df_postcode_file.query('Postcode == postcodes'))
         # self.cat_pst_values = self.df_postcode_file.append(self.df_values_file, ignore_index=True, sort=False)
         """
+        # get index in cat_pst_values that contains postcodes
         print(self.cat_pst_values[self.cat_pst_values['Postcode'].isin(postcodes)])
         lst = self.cat_pst_values[self.cat_pst_values['Postcode'].isin(postcodes)].index.tolist()
         for idx in lst:
