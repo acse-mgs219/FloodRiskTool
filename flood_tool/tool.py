@@ -1,5 +1,7 @@
 """Locator functions to interact with geographic data"""
 import pandas as pd
+import numpy as np
+from math import sqrt
 __all__ = ['Tool']
 
 class Tool(object):
@@ -23,7 +25,7 @@ class Tool(object):
         self.get_lat_long_lst = []
         self.get_e_n_flood_prob_band = []
         self.df_postcode_file = pd.read_csv( postcode_file)
-        self.df_risk_file = pd.read_csv( risk_file)
+        self.df_risk_file = pd.read_csv( risk_file,index_col=False)
         self.df_values_file = pd.read_csv( values_file)
 
         #formatting the postcode column of postcodes file
@@ -64,8 +66,14 @@ class Tool(object):
             Array of Nx2 (latitude, longitdue) pairs for the input postcodes.
             Invalid postcodes return [`numpy.nan`, `numpy.nan`].
         """
-
-        raise NotImplementedError
+        print(self.cat_pst_values[self.cat_pst_values['Postcode'].isin(postcodes)])
+        lst = self.cat_pst_values[self.cat_pst_values['Postcode'].isin(postcodes)].index.tolist()
+        for idx in lst:
+            self.get_lat_long_lst.append([self.cat_pst_values.loc[idx, 'Lat'], self.cat_pst_values.loc[idx, 'Long']])
+        print(lst)
+        print(self.get_lat_long_lst)
+        print("get_lat_long OK")
+        return self.get_lat_long_lst
 
 
     def get_easting_northing_flood_probability_band(self, easting, northing):
@@ -89,9 +97,24 @@ class Tool(object):
         numpy.ndarray of strs
             numpy array of flood probability bands corresponding to input locations.
         """
-        raise NotImplementedError
-
-
+        bandList=["Zero","Very low","Low","Medium","High"]
+        size=len(easting)
+        flood_prob_band=np.zeros(size)
+        for i in range(size):
+            normalizedX=self.df_values_file.X.map(lambda x: (x-easting[i])**2)
+            normalizedY=self.df_values_file.Y.map(lambda y:(y-northing[i])**2)
+            r_nor=sqrt(normalizedX+normalizedY)
+            normalizedr=self.df_values_file.r-r_nor 
+            indexList=np.where(normalizedr>=0) #find an index list of all the circles that contains the input x,y
+            self.df_values_file.prob_4band[self.df_values_file.prob_4band=="High"]=4
+            self.df_values_file.prob_4band[self.df_values_file.prob_4band=="Medium"]=3
+            self.df_values_file.prob_4band[self.df_values_file.prob_4band=="Low"]=2
+            self.df_values_file.prob_4band[self.df_values_file.prob_4band=="Very low"]=1
+            self.df_values_file.prob_4band[self.df_values_file.prob_4band=="Zero"]==0
+            probabilityList=self.df_values_file.prob_4band[indexList]
+            flood_prob_band[i]=bandList[probabilityList.max()]
+        
+        return flood_prob_band
     def get_sorted_flood_probability(self, postcodes):
         """Get an array of flood risk probabilities from a sequence of postcodes.
 
@@ -177,5 +200,5 @@ class Tool(object):
         """
         raise NotImplementedError
 
-#tool=Tool(postcode_file="C:/Users/50319/OneDrive/Documents/acse/acse-4-flood-tool-mersey/flood_tool/postcodes.csv",risk_file="C:/Users/50319/OneDrive/Documents/acse/acse-4-flood-tool-mersey/flood_tool/flood_probability.csv",
-#values_file="C:/Users/50319/OneDrive/Documents/acse/acse-4-flood-tool-mersey/flood_tool/property_value.csv")
+tool=Tool(postcode_file="C:/Users/50319/OneDrive/Documents/acse/acse-4-flood-tool-mersey/flood_tool/resources/postcodes.csv",risk_file="C:/Users/50319/OneDrive/Documents/acse/acse-4-flood-tool-mersey/flood_tool/resources/flood_probability.csv",
+values_file="C:/Users/50319/OneDrive/Documents/acse/acse-4-flood-tool-mersey/flood_tool/resources/property_value.csv")
