@@ -141,7 +141,7 @@ class Tool(object):
             data column is named `Probability Band`. Invalid postcodes and duplicates
             are removed.
         """
-        probabilities =
+        probabilities = 1
 
 
     def get_flood_cost(self, postcodes, probability_bands):
