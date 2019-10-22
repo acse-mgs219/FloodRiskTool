@@ -1,5 +1,7 @@
 """Locator functions to interact with geographic data"""
 import pandas as pd
+import numpy as np
+from functools import reduce
 __all__ = ['Tool']
 
 class Tool(object):
@@ -21,13 +23,27 @@ class Tool(object):
             Filename of a .csv file containing property value data for postcodes.
         """
         self.get_lat_long_lst = []
-        self.df_postcode_file = pd.read_csv('resources/' + postcode_file, header=1, names=["Postcode", "Lat", "Long"],
-                                            encoding='utf-8')
-        self.df_risk_file = pd.read_csv('resources/' + risk_file, encoding='utf-8')
-        self.df_values_file = pd.read_csv('resources/' + values_file, encoding='utf-8')
-        self.cat_pst_values = self.df_postcode_file.append(self.df_values_file, ignore_index=True, sort=False)
+        self.get_e_n_flood_prob_band = []
+        self.df_postcode_file = pd.read_csv('resources/' + postcode_file, header=1, names=["Postcode", "Lat", "Long"])
+        self.df_risk_file = pd.read_csv('resources/' + risk_file)
+        self.df_values_file = pd.read_csv('resources/' + values_file)
 
-        print(self.df_postcode_file.head())
+        # formatting the postcode column of postcodes file
+        self.df_postcode_file.Postcode = self.df_postcode_file.Postcode.str.replace(' ',
+                                                                                    '')  # delete space in postcodes strings
+        self.df_postcode_file.Postcode = self.df_postcode_file.Postcode.str.strip()
+        self.df_postcode_file.Postcode = self.df_postcode_file.Postcode.str.upper()
+
+        # formatting the postcode column of property file
+        self.df_values_file.Postcode = self.df_values_file.Postcode.str.replace(' ',
+                                                                                '')  # delete space in postcodes strings
+        self.df_values_file.Postcode = self.df_values_file.Postcode.str.strip()
+        self.df_values_file.Postcode = self.df_values_file.Postcode.str.upper()
+
+        # merge two
+        # self.cat_pst_values = self.df_postcode_file.append(self.df_values_file, ignore_index=True, sort=False)
+
+        print(self.df_postcode_file.head(n=14))
         print(self.df_risk_file.head())
         print(self.df_values_file.head())
         print("read 3 file successfully")
@@ -49,26 +65,23 @@ class Tool(object):
             Array of Nx2 (latitude, longitdue) pairs for the input postcodes.
             Invalid postcodes return [`numpy.nan`, `numpy.nan`].
         """
-        """
-        # df_left = self.df_postcode_file
-        # df_right = self.df_values_file
-        # result = pd.merge(df_left, df_right, on=['Postcode'], how='inner')
-        # print(len(df_left))
-        # print(len(df_right))
-        # print(len(result))
-        # mask = result['Postcode'].values == postcodes
-        # print(result[mask])
-        # print(result[result.index[mask], 'Long'])
-        # print(self.df_postcode_file.query('Postcode == postcodes'))
-        # self.cat_pst_values = self.df_postcode_file.append(self.df_values_file, ignore_index=True, sort=False)
-        """
-        print(self.cat_pst_values[self.cat_pst_values['Postcode'].isin(postcodes)])
-        lst = self.cat_pst_values[self.cat_pst_values['Postcode'].isin(postcodes)].index.tolist()
-        for idx in lst:
-            self.get_lat_long_lst.append([self.cat_pst_values.loc[idx, 'Lat'], self.cat_pst_values.loc[idx, 'Long']])
+
+        # get index in cat_pst_values that contains postcodes
+
+        postcodes = [postcode.replace(' ', '') for postcode in postcodes]
+        print(postcodes)
+        print(self.df_postcode_file[self.df_postcode_file['Postcode'].isin(postcodes)])
+
+        lst = reduce(pd.DataFrame.append, map(lambda i : self.df_postcode_file[self.df_postcode_file.Postcode == i],
+                                              postcodes))
         print(lst)
+        for i,r in lst.iterrows():
+            #self.get_lat_long_lst.append([lst.loc[i[0], 'Lat'], [lst.loc[i[0], 'Long']]])
+            self.get_lat_long_lst.append([r['Lat'], r['Long']])
         print(self.get_lat_long_lst)
         print("get_lat_long OK")
+        print(np.array(self.get_lat_long_lst))
+        return np.array(self.get_lat_long_lst)
 
 
     def get_easting_northing_flood_probability_band(self, easting, northing):
@@ -93,8 +106,17 @@ class Tool(object):
         numpy.ndarray of strs
             numpy array of flood probability bands corresponding to input locations.
         """
-        lst = self.df_risk_file[self.df_risk_file['Postcode'].isin(postcodes)].index.tolist()
-        self.df_risk_file
+        lst = self.df_risk_file[self.df_risk_file['X'].isin(easting) & self.df_risk_file['Y'].isin(northing)]
+        print(lst)
+        lst = lst.index.tolist()
+
+        for idx in lst:
+            # add algorithm
+            self.get_e_n_flood_prob_band.append([self.df_risk_file.loc[idx, 'prob_4band']])
+        if len(lst) == 0:
+            return ['Zero']
+        return [self.df_risk_file.loc[lst[0], 'prob_4band']]
+
 
 
 
@@ -119,7 +141,7 @@ class Tool(object):
             data column is named `Probability Band`. Invalid postcodes and duplicates
             are removed.
         """
-        raise NotImplementedError
+        probabilities =
 
 
     def get_flood_cost(self, postcodes, probability_bands):

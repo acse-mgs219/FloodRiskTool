@@ -178,7 +178,7 @@ def WGS84toOSGB36(latitude, longitude, radians=False):
     z=Xosgb36[2]
 
     #transform the cartesan coor back to latitude&longitude under os datum
-    osLatitude,osLongitude=xyz_to_lat_long(x,y,z,radians,datum=osgb36)    
+    osLatitude,osLongitude=xyz_to_lat_long(x,y,z,True,datum=osgb36)
     return np.array((osLatitude,osLongitude))
 
 def get_easting_northing_from_lat_long(latitude, longitude, radians=False):
@@ -207,8 +207,10 @@ def get_easting_northing_from_lat_long(latitude, longitude, radians=False):
     A guide to coordinate systems in Great Britain 
     (https://webarchive.nationalarchives.gov.uk/20081023180830/http://www.ordnancesurvey.co.uk/oswebsite/gps/information/coordinatesystemsinfo/guidecontents/index.html)
     """ 
-    
-    os_latitude, os_longitude = WGS84toOSGB36(latitude, longitude, False)
+    latitude = np.array(latitude)
+    longitude = np.array(longitude)
+
+    os_latitude, os_longitude = WGS84toOSGB36(latitude, longitude, radians)
     #os_latitude, os_longitude = latitude, longitude
 
     # Set up variables to be used
@@ -260,8 +262,8 @@ def get_easting_northing_from_lat_long(latitude, longitude, radians=False):
     east_north[:,1] = one + two*(os_longitude - osgb36.lam_0)**2 + three*(os_longitude - osgb36.lam_0)**4 + three_a*(os_longitude - osgb36.lam_0)**6
     east_north[:,0] = osgb36.E_0 + four*(os_longitude - osgb36.lam_0) + five*(os_longitude - osgb36.lam_0)**3 + six*(os_longitude - osgb36.lam_0)**5
 
-    return east_north
+    return np.array(east_north[:,0]), np.array(east_north[:,1])
 
-latitude = np.array([51.20213, 51.24635])
-longitude = np.array([0.473017, 0.284182])
-print(get_easting_northing_from_lat_long(latitude, longitude))
+#latitude = np.array([51.20213, 51.24635])
+#longitude = np.array([0.473017, 0.284182])
+#print(get_easting_northing_from_lat_long(latitude, longitude))
