@@ -1,14 +1,8 @@
 """Locator functions to interact with geographic data"""
 import pandas as pd
 import numpy as np
-<<<<<<< HEAD
-from geo import *
-# import geo
-=======
 from .geo import *
-#import geo
-import tkinter as tk
->>>>>>> 5734c2e575e10f483980e25eed15343c9e385b5d
+
 
 __all__ = ['Tool']
 
@@ -30,10 +24,6 @@ class Tool(object):
         postcode_file : str, optional
             Filename of a .csv file containing property value data for postcodes.
         """
-        # self.get_lat_long_lst = []
-        # self.get_e_n_flood_prob = []
-        # self.flood_risk = []
-
         # read postcodes.csv
         if postcode_file == None:
             self.df_postcode_file = pd.read_csv("./resources/postcodes.csv")
@@ -65,17 +55,11 @@ class Tool(object):
         self.df_values_file.Postcode = self.df_values_file.Postcode.str.upper()
 
         # merge two
-        # self.cat_pst_values = self.df_postcode_file.append(self.df_values_file, ignore_index=True, sort=False)
         self.cat_pst_values = self.df_postcode_file.set_index('Postcode').join(self.df_values_file.set_index('Postcode'))
         del self.cat_pst_values['Lat']
         del self.cat_pst_values['Long']
         self.cat_pst_values = self.cat_pst_values.fillna(0)
 
-        print(self.cat_pst_values)
-        print(self.df_postcode_file.head(n=14))
-        print(self.df_risk_file.head())
-        print(self.df_values_file.head())
-        print("read 3 file successfully")
 
     def get_lat_long(self, postcodes):
         """Get an array of WGS84 (latitude, longitude) pairs from a list of postcodes.
@@ -93,15 +77,9 @@ class Tool(object):
             Array of Nx2 (latitude, longitdue) pairs for the input postcodes.
             Invalid postcodes return [`numpy.nan`, `numpy.nan`].
         """
-
-        # get index in cat_pst_values that contains postcodes
         postcodes = [postcode.replace(' ', '').upper().strip() for postcode in postcodes]
-        # self.df_postcode_file.set_index('Postcode', inplace=True)
         indices = self.cat_pst_values.loc[postcodes, ['Latitude', 'Longitude']]
         return indices.values
-
-
-
 
 
     def get_easting_northing_flood_probability(self, easting, northing):
@@ -158,11 +136,6 @@ class Tool(object):
         outputpro[outputpro == 2] = "Low"
         outputpro[outputpro == 1] = "Very Low"
         outputpro[outputpro == 0] = "No Risk"
-<<<<<<< HEAD
-
-=======
-        print("hey")
->>>>>>> 5734c2e575e10f483980e25eed15343c9e385b5d
         return outputpro
 
 
@@ -190,21 +163,14 @@ class Tool(object):
             data column is named `Probability Band`. Invalid postcodes and duplicates
             are removed.
         """
-        postcodes = [postcode.replace(' ', '').upper().strip() for postcode in postcodes]
-        postcodes = self.cat_pst_values.loc[postcodes].dropna().index
-        print(postcodes)
         latLongs = self.get_lat_long(postcodes)
-        print(latLongs)
         eastNorths = get_easting_northing_from_lat_long(latLongs[:, 0], latLongs[:, 1])
-        print(eastNorths)
         probs = self.get_easting_northing_flood_probability(eastNorths[0], eastNorths[1])
-        print(probs)
         probsSort = pd.DataFrame({'Postcode': postcodes, 'Probability Band': probs})
         probsSort.set_index('Postcode', inplace=True)
         probsSort['Probability Band'] = pd.Categorical(probsSort['Probability Band'],
                                                        ["High", "Medium", "Low", "Very Low", "No Risk"])
         probsSort = probsSort.sort_values(by=['Probability Band', 'Postcode'])
-        # print(list(self.flood_risk.columns))
         probsSort = probsSort[~probsSort.index.duplicated(keep='first')].dropna()
         return probsSort
 
@@ -216,7 +182,7 @@ class Tool(object):
 
         postcodes: sequence of strs
             Ordered collection of postcodes
-        probabilitys: sequence of strs
+        probability_bands: sequence of strs
             Ordered collection of flood probability bands
 
         Returns
@@ -225,22 +191,6 @@ class Tool(object):
         numpy.ndarray of floats
             array of floats for the pound sterling cost for the input postcodes.
             Invalid postcodes return `numpy.nan`.
-        """
-        """
-        postcodes = [postcode.replace(' ', '').upper().strip() for postcode in postcodes]
-        # self.df_values_file.set_index('Postcode', inplace=True)
-        try:
-            indices = self.cat_pst_values.loc[postcodes, 'Total Value']
-            indices = indices.div(20)
-        except:
-            indices = np.zeros([len(postcodes)])
-            indices[:] = np.nan
-        #print("Look here")
-        #print(indices.values)
-        try:
-            return np.array(indices.values)
-        except AttributeError:
-            return indices
         """
         flood_cost = []
         postcodes = [postcode.replace(' ', '').upper().strip() for postcode in postcodes]
@@ -253,7 +203,7 @@ class Tool(object):
         return flood_cost
 
 
-    def get_annual_flood_risk(self, postcodes, probabilitys):
+    def get_annual_flood_risk(self, postcodes, probability_bands):
         """Get an array of estimated annual flood risk in pounds sterling per year of a flood
         event from a sequence of postcodes and flood probabilities.
 
@@ -262,7 +212,7 @@ class Tool(object):
 
         postcodes: sequence of strs
             Ordered collection of postcodes
-        probabilitys: sequence of strs
+        probability_bands: sequence of strs
             Ordered collection of flood probabilities
 
         Returns
@@ -272,59 +222,27 @@ class Tool(object):
             array of floats for the annual flood risk in pounds sterling for the input postcodes.
             Invalid postcodes return `numpy.nan`.
         """
-        
+
         flood_risk = []
         reduce_cost = 0.05
         postcodes = [postcode.replace(' ', '').upper().strip() for postcode in postcodes]
         for i in range(len(postcodes)):
             if postcodes[i] in self.cat_pst_values.index:
                 flood_risk.append(self.cat_pst_values.loc[postcodes[i], 'Total Value'].tolist())
-                if probabilitys[i] == 'High':
+                if probability_bands[i] == 'High':
                     flood_risk[i] = flood_risk[i] * reduce_cost * 1 / 10
-                elif probabilitys[i] == 'Medium':
+                elif probability_bands[i] == 'Medium':
                     flood_risk[i] = flood_risk[i] * reduce_cost * 1 / 50
-                elif probabilitys[i] == 'Low':
+                elif probability_bands[i] == 'Low':
                     flood_risk[i] = flood_risk[i] * reduce_cost * 1 / 100
-                elif probabilitys[i] == 'Very Low':
+                elif probability_bands[i] == 'Very Low':
                     flood_risk[i] = flood_risk[i] * reduce_cost * 1 / 1000
                 else:
                     flood_risk[i] = 0.
             else:
                 flood_risk.append(np.nan)
-        print(np.array(flood_risk))
-        print("get_annual_flood_risk")
         return np.array(flood_risk)
 
-        """
-        flood_risk = []
-        reduce_cost = 0.05
-<<<<<<< HEAD
-        postcodes = [postcode.replace(' ', '').upper().strip() for postcode in postcodes]
-        pro = np.array(probabilitys)
-        pro[pro == "High"] = 1 / 10
-        pro[pro == "Medium"] = 1 / 50
-        pro[pro == "Low"] = 1 / 100
-        pro[pro == "Very Low"] = 1 / 1000
-=======
-        postcodes = [postcode.replace(' ', '').upper() for postcode in postcodes]
-        pro = np.array(probability_bands)
-        pro[pro == "High"] = 0.1
-        pro[pro == "Medium"] = 0.02
-        pro[pro == "Low"] = 0.01
-        pro[pro == "Very Low"] = 0.001
->>>>>>> 5734c2e575e10f483980e25eed15343c9e385b5d
-        pro[pro == "Zero"] = 0
-        try:
-            print(self.cat_pst_values.loc[postcodes, 'Total Value'].values)
-            flood_risk = self.cat_pst_values.loc[postcodes, 'Total Value'].values * pro.astype(float) * reduce_cost
-        except KeyError: 
-            flood_risk = np.zeros([len(postcodes)])
-            flood_risk[:] = np.nan
-            return flood_risk
-        for i in range(len(flood_risk)):
-            print(flood_risk[i])
-        return np.array(flood_risk)"""
-        
 
     def get_sorted_annual_flood_risk(self, postcodes):
         """Get a sorted pandas DataFrame of flood risks.
@@ -344,31 +262,12 @@ class Tool(object):
             `Postcode` and the data column `Flood Risk`.
             Invalid postcodes and duplicates are removed.
         """
-
-        print("start")
-<<<<<<< HEAD
-=======
         latLongs = self.get_lat_long(postcodes)
         eastNorths = get_easting_northing_from_lat_long(latLongs[:, 0], latLongs[:, 1])
         probs = self.get_easting_northing_flood_probability(eastNorths[0], eastNorths[1])
-        reduce_cost = 0.05
->>>>>>> 5734c2e575e10f483980e25eed15343c9e385b5d
-        postcodes = [postcode.replace(' ', '').upper().strip() for postcode in postcodes]
-        latLongs = self.get_lat_long(postcodes)
-        eastNorths = get_easting_northing_from_lat_long(latLongs[:, 0], latLongs[:, 1])
-        probs = self.get_easting_northing_flood_probability(eastNorths[0], eastNorths[1])
-        self.flood_risk = self.get_annual_flood_risk(postcodes, probs)
-        self.flood_risk = self.flood_risk.sort_values(by=['Total Value', 'Postcode'], ascending=[False, True])
-        # print(list(self.flood_risk.columns))
-        self.flood_risk = self.flood_risk[~self.flood_risk.index.duplicated(keep='first')].dropna()
-        # self.flood_risk.drop_duplicates(subset="", inplace=True)
-        return self.flood_risk
-
-    def test(self, postcodes):
-
-        # get index in cat_pst_values that contains postcodes
-        postcodes = [postcode.replace(' ', '').upper().strip() for postcode in postcodes]
-        # self.df_postcode_file.set_index('Postcode', inplace=True)
-        indices = self.cat_pst_values.loc[postcodes, ['Latitude', 'Longitude']]
-        print(indices.values)
-        return indices.values
+        flood_risk = self.get_annual_flood_risk(postcodes, probs)
+        probsSort = pd.DataFrame({'Postcode': postcodes, 'Flood Risk': flood_risk})
+        annual_flood_risk = probsSort.sort_values(by=['Flood Risk', 'Postcode'], ascending=[False, True])
+        annual_flood_risk.set_index('Postcode', inplace=True)
+        annual_flood_risk = annual_flood_risk[~annual_flood_risk.index.duplicated(keep='first')].dropna()
+        return annual_flood_risk
