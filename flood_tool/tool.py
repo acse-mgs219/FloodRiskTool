@@ -2,7 +2,7 @@
 import pandas as pd
 import numpy as np
 from .geo import *
-# import .geo
+# import geo
 
 __all__ = ['Tool']
 
@@ -216,11 +216,24 @@ class Tool(object):
             array of floats for the pound sterling cost for the input postcodes.
             Invalid postcodes return `numpy.nan`.
         """
+        """
         postcodes = [postcode.replace(' ', '').upper().strip() for postcode in postcodes]
         # self.df_values_file.set_index('Postcode', inplace=True)
         indices = self.cat_pst_values.loc[postcodes, 'Total Value']
         indices = indices.div(20)
+        print("Look here")
+        print(indices.values)
         return np.array(indices.values)
+        """
+        flood_cost = []
+        postcodes = [postcode.replace(' ', '').upper().strip() for postcode in postcodes]
+        for i in range(len(postcodes)):
+            if postcodes[i] in self.cat_pst_values.index:
+                flood_cost.append(self.cat_pst_values.loc[postcodes[i], 'Total Value'].tolist())
+            else:
+                flood_cost.append(np.nan)
+        flood_cost = np.array(flood_cost)
+        return flood_cost
 
 
     def get_annual_flood_risk(self, postcodes, probability_bands):
@@ -261,6 +274,7 @@ class Tool(object):
                     flood_risk[i] = 0.
             else:
                 flood_risk.append(np.nan)
+        print(np.array(flood_risk))
         print("get_annual_flood_risk")
         return np.array(flood_risk)
 
@@ -297,6 +311,8 @@ class Tool(object):
             `Postcode` and the data column `Flood Risk`.
             Invalid postcodes and duplicates are removed.
         """
+
+        print("start")
         latLongs = self.get_lat_long(postcodes)
         eastNorths = geo.get_easting_northing_from_lat_long(latLongs[:, 0], latLongs[:, 1])
         probs = self.get_easting_northing_flood_probability_band(eastNorths[0], eastNorths[1])
