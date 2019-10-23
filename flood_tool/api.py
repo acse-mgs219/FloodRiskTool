@@ -1,7 +1,7 @@
 import json
 import requests
 import csv
-import matplotlib as plt
+import matplotlib.pyplot as plt
 import pandas as pd
 import urllib.request
 import shutil
@@ -37,11 +37,13 @@ def rainfall_date(date):
         df.station[i]=requests.get(urlregion).json()['items']['stationReference']
    # print(df.head())
 
-    dfstation=df.groupby(['station','dateTime'])
-    station_ref_list=dfstation['station']
-    print(station_ref_list)
-    #print(dfstation.region.unique())
-
+    #dfstation=df.groupby(['station','dateTime'])
+    #station_ref_list=dfstation['station']
+    
+    #fig,ax=plt.subplots()
+    #df.groupby('measure').plot(x='dateTime',y='value',ax=ax,legend=True) #plot the dateTime vs rainfall
+    df.sort_values(['station','dateTime'],ascending=True).groupby('station').plot(x='dateTime',y='value',legend=True,title='station')
+    plt.show()
 rainfall_date("2018-09-29") 
 
 
