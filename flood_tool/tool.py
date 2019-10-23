@@ -1,8 +1,14 @@
 """Locator functions to interact with geographic data"""
 import pandas as pd
 import numpy as np
+<<<<<<< HEAD
 from geo import *
 # import geo
+=======
+from .geo import *
+#import geo
+import tkinter as tk
+>>>>>>> 5734c2e575e10f483980e25eed15343c9e385b5d
 
 __all__ = ['Tool']
 
@@ -152,7 +158,11 @@ class Tool(object):
         outputpro[outputpro == 2] = "Low"
         outputpro[outputpro == 1] = "Very Low"
         outputpro[outputpro == 0] = "No Risk"
+<<<<<<< HEAD
 
+=======
+        print("hey")
+>>>>>>> 5734c2e575e10f483980e25eed15343c9e385b5d
         return outputpro
 
 
@@ -288,12 +298,21 @@ class Tool(object):
         """
         flood_risk = []
         reduce_cost = 0.05
+<<<<<<< HEAD
         postcodes = [postcode.replace(' ', '').upper().strip() for postcode in postcodes]
         pro = np.array(probabilitys)
         pro[pro == "High"] = 1 / 10
         pro[pro == "Medium"] = 1 / 50
         pro[pro == "Low"] = 1 / 100
         pro[pro == "Very Low"] = 1 / 1000
+=======
+        postcodes = [postcode.replace(' ', '').upper() for postcode in postcodes]
+        pro = np.array(probability_bands)
+        pro[pro == "High"] = 0.1
+        pro[pro == "Medium"] = 0.02
+        pro[pro == "Low"] = 0.01
+        pro[pro == "Very Low"] = 0.001
+>>>>>>> 5734c2e575e10f483980e25eed15343c9e385b5d
         pro[pro == "Zero"] = 0
         try:
             print(self.cat_pst_values.loc[postcodes, 'Total Value'].values)
@@ -327,6 +346,13 @@ class Tool(object):
         """
 
         print("start")
+<<<<<<< HEAD
+=======
+        latLongs = self.get_lat_long(postcodes)
+        eastNorths = get_easting_northing_from_lat_long(latLongs[:, 0], latLongs[:, 1])
+        probs = self.get_easting_northing_flood_probability(eastNorths[0], eastNorths[1])
+        reduce_cost = 0.05
+>>>>>>> 5734c2e575e10f483980e25eed15343c9e385b5d
         postcodes = [postcode.replace(' ', '').upper().strip() for postcode in postcodes]
         latLongs = self.get_lat_long(postcodes)
         eastNorths = get_easting_northing_from_lat_long(latLongs[:, 0], latLongs[:, 1])
@@ -337,3 +363,12 @@ class Tool(object):
         self.flood_risk = self.flood_risk[~self.flood_risk.index.duplicated(keep='first')].dropna()
         # self.flood_risk.drop_duplicates(subset="", inplace=True)
         return self.flood_risk
+
+    def test(self, postcodes):
+
+        # get index in cat_pst_values that contains postcodes
+        postcodes = [postcode.replace(' ', '').upper().strip() for postcode in postcodes]
+        # self.df_postcode_file.set_index('Postcode', inplace=True)
+        indices = self.cat_pst_values.loc[postcodes, ['Latitude', 'Longitude']]
+        print(indices.values)
+        return indices.values
