@@ -2,7 +2,8 @@
 import pandas as pd
 import numpy as np
 from .geo import *
-# import geo
+#import geo
+import tkinter as tk
 
 __all__ = ['Tool']
 
@@ -98,7 +99,7 @@ class Tool(object):
 
 
 
-    def get_easting_northing_flood_probability_band(self, easting, northing):
+    def get_easting_northing_flood_probability(self, easting, northing):
 
         """Get an array of flood risk probabilities from arrays of eastings and northings.
 
@@ -151,8 +152,8 @@ class Tool(object):
         outputpro[outputpro == 3] = "Medium"
         outputpro[outputpro == 2] = "Low"
         outputpro[outputpro == 1] = "Very Low"
-        outputpro[outputpro == 0] = "Zero"
-
+        outputpro[outputpro == 0] = "No Risk"
+        print("hey")
         return outputpro
 
 
@@ -185,9 +186,9 @@ class Tool(object):
         print(postcodes)
         latLongs = self.get_lat_long(postcodes)
         print(latLongs)
-        eastNorths = geo.get_easting_northing_from_lat_long(latLongs[:, 0], latLongs[:, 1])
+        eastNorths = get_easting_northing_from_lat_long(latLongs[:, 0], latLongs[:, 1])
         print(eastNorths)
-        probs = self.get_easting_northing_flood_probability_band(eastNorths[0], eastNorths[1])
+        probs = self.get_easting_northing_flood_probability(eastNorths[0], eastNorths[1])
         print(probs)
         probsSort = pd.DataFrame({'Postcode': postcodes, 'Probability Band': probs})
         probsSort.set_index('Postcode', inplace=True)
@@ -281,12 +282,12 @@ class Tool(object):
         """
         flood_risk = []
         reduce_cost = 0.05
-        postcodes = [postcode.replace(' ', '').upper().strip() for postcode in postcodes]
+        postcodes = [postcode.replace(' ', '').upper() for postcode in postcodes]
         pro = np.array(probability_bands)
-        pro[pro == "High"] = 1 / 10
-        pro[pro == "Medium"] = 1 / 50
-        pro[pro == "Low"] = 1 / 100
-        pro[pro == "Very Low"] = 1 / 1000
+        pro[pro == "High"] = 0.1
+        pro[pro == "Medium"] = 0.02
+        pro[pro == "Low"] = 0.01
+        pro[pro == "Very Low"] = 0.001
         pro[pro == "Zero"] = 0
         flood_risk = self.cat_pst_values.loc[postcodes, 'Total Value'] * pro * reduce_cost
         print(flood_risk)
@@ -314,8 +315,8 @@ class Tool(object):
 
         print("start")
         latLongs = self.get_lat_long(postcodes)
-        eastNorths = geo.get_easting_northing_from_lat_long(latLongs[:, 0], latLongs[:, 1])
-        probs = self.get_easting_northing_flood_probability_band(eastNorths[0], eastNorths[1])
+        eastNorths = get_easting_northing_from_lat_long(latLongs[:, 0], latLongs[:, 1])
+        probs = self.get_easting_northing_flood_probability(eastNorths[0], eastNorths[1])
         reduce_cost = 0.05
         postcodes = [postcode.replace(' ', '').upper().strip() for postcode in postcodes]
         pro = np.array(probs)
@@ -332,3 +333,12 @@ class Tool(object):
         self.flood_risk = self.flood_risk[~self.flood_risk.index.duplicated(keep='first')].dropna()
         # self.flood_risk.drop_duplicates(subset="", inplace=True)
         return self.flood_risk
+
+    def test(self, postcodes):
+
+        # get index in cat_pst_values that contains postcodes
+        postcodes = [postcode.replace(' ', '').upper().strip() for postcode in postcodes]
+        # self.df_postcode_file.set_index('Postcode', inplace=True)
+        indices = self.cat_pst_values.loc[postcodes, ['Latitude', 'Longitude']]
+        print(indices.values)
+        return indices.values
