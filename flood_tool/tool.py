@@ -217,25 +217,16 @@ class Tool(object):
             array of floats for the annual flood risk in pounds sterling for the input postcodes.
             Invalid postcodes return `numpy.nan`.
         """
-
         flood_risk = []
         reduce_cost = 0.05
         postcodes = [postcode.replace(' ', '').upper().strip() for postcode in postcodes]
-        for i in range(len(postcodes)):
-            if postcodes[i] in self.cat_pst_values.index:
-                flood_risk.append(self.cat_pst_values.loc[postcodes[i], 'Total Value'].tolist())
-                if probability_bands[i] == 'High':
-                    flood_risk[i] = flood_risk[i] * reduce_cost * 1 / 10
-                elif probability_bands[i] == 'Medium':
-                    flood_risk[i] = flood_risk[i] * reduce_cost * 1 / 50
-                elif probability_bands[i] == 'Low':
-                    flood_risk[i] = flood_risk[i] * reduce_cost * 1 / 100
-                elif probability_bands[i] == 'Very Low':
-                    flood_risk[i] = flood_risk[i] * reduce_cost * 1 / 1000
-                else:
-                    flood_risk[i] = 0.
-            else:
-                flood_risk.append(np.nan)
+        pro = np.array(probability_bands)
+        pro[pro == "High"] = 1 / 10
+        pro[pro == "Medium"] = 1 / 50
+        pro[pro == "Low"] = 1 / 100
+        pro[pro == "Very Low"] = 1 / 1000
+        pro[pro == "No Risk"] = 0.0
+        flood_risk = self.cat_pst_values.loc[postcodes, 'Total Value'].values * pro.astype(float) * reduce_cost
         return np.array(flood_risk)
 
 
