@@ -216,7 +216,7 @@ class Tool(object):
         pro[pro == "Medium"] = 1 / 50
         pro[pro == "Low"] = 1 / 100
         pro[pro == "Very Low"] = 1 / 1000
-        pro[pro == "No Risk"] = 0.0
+        pro[pro == "Zero"] = 0.0
         flood_risk = self.cat_pst_values.loc[postcodes, 'Total Value'].values * pro.astype(float) * reduce_cost
         return np.array(flood_risk)
 
