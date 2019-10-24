@@ -1,7 +1,7 @@
 """Locator functions to interact with geographic data"""
 import pandas as pd
 import numpy as np
-from .geo import *
+#from .geo import *
 
 
 __all__ = ['Tool']
