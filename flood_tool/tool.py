@@ -155,10 +155,16 @@ class Tool(object):
             are removed.
         """
         # postcodes = [postcode.replace(' ', '').upper().strip() for postcode in postcodes]
+        """
         postcodes = np.array(list(map(lambda p: np.char.upper(p) if len(p) == 7 else str(p).replace(' ', ''),
                                       postcodes)))
         index = np.unique(postcodes, return_index=True)[1]
         postcodes = [postcodes[i] for i in index]
+        """
+        postcodes = [pc.upper() for pc in postcodes]
+        postcodes = [pc.replace(' ', '') if len(pc) > 7 else pc for pc in postcodes]
+        postcodes = [pc[0:2] + ' ' + pc[2:] if len(pc) == 5 else pc for pc in postcodes]
+        postcodes = [pc[0:3] + ' ' + pc[3:] if (len(pc) == 6) and (pc[2] != ' ') else pc for pc in postcodes]
         latLongs = self.get_lat_long(postcodes)
         eastNorths = get_easting_northing_from_lat_long(latLongs[:, 0], latLongs[:, 1])
         probs = self.get_easting_northing_flood_probability(eastNorths[0], eastNorths[1])
@@ -245,15 +251,17 @@ class Tool(object):
             Invalid postcodes and duplicates are removed.
         """
         # postcodes = [postcode.replace(' ', '').upper().strip() for postcode in postcodes]
-        postcodes = np.array(list(map(lambda p: np.char.upper(p) if len(p) == 7 else str(p).replace(' ', ''),
-                                      postcodes)))
-        index = np.unique(postcodes, return_index=True)[1]
-        postcodes = [postcodes[i] for i in index]
-        latLongs = self.get_lat_long(postcodes)
-        eastNorths = get_easting_northing_from_lat_long(latLongs[:, 0], latLongs[:, 1])
-        probs = self.get_easting_northing_flood_probability(eastNorths[0], eastNorths[1])
-        flood_risk = self.get_annual_flood_risk(postcodes, probs)
-        probsSort = pd.DataFrame({'Postcode': postcodes, 'Flood Risk': flood_risk})
+        # postcodes = np.array(list(map(lambda p: np.char.upper(p) if len(p) == 7 else str(p).replace(' ', ''),
+        #                               postcodes)))
+        # index = np.unique(postcodes, return_index=True)[1]
+        # postcodes = [postcodes[i] for i in index]
+        # latLongs = self.get_lat_long(postcodes)
+        # eastNorths = get_easting_northing_from_lat_long(latLongs[:, 0], latLongs[:, 1])
+        # probs = self.get_easting_northing_flood_probability(eastNorths[0], eastNorths[1])
+        flood_risk = self.get_sorted_flood_probability(postcodes)
+        postcodes_new = flood_risk.index.values
+        risk = self.get_annual_flood_risk(postcodes_new, flood_risk.values.reshape((-1)))
+        probsSort = pd.DataFrame({'Postcode': postcodes_new, 'Flood Risk': risk})
         annual_flood_risk = probsSort.sort_values(by=['Flood Risk', 'Postcode'], ascending=[False, True])
         annual_flood_risk.set_index('Postcode', inplace=True)
         annual_flood_risk = annual_flood_risk[~annual_flood_risk.index.duplicated(keep='first')].dropna()
