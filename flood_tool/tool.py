@@ -194,13 +194,8 @@ class Tool(object):
         """
         flood_cost = []
         postcodes = [postcode.replace(' ', '').upper().strip() for postcode in postcodes]
-        for i in range(len(postcodes)):
-            if postcodes[i] in self.cat_pst_values.index:
-                flood_cost.append(self.cat_pst_values.loc[postcodes[i], 'Total Value'].tolist())
-            else:
-                flood_cost.append(np.nan)
-        flood_cost = np.array(flood_cost)
-        return flood_cost
+        indices = self.cat_pst_values.loc[postcodes, 'Total Value']
+        return np.array(indices.values)
 
 
     def get_annual_flood_risk(self, postcodes, probability_bands):
