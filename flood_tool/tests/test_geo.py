@@ -1,9 +1,11 @@
+"""Test geodetic transformations module."""
+
 import copy
 
 import numpy as np
 from pytest import approx, mark
 
-import flood_tool.geo as geo
+import .geo
 
 def test_rad():
     """Test rad function"""
@@ -54,7 +56,7 @@ def test_WGS84toOSGB36transform():
                        [5047112.797]])
     assert geo.WGS84toOSGB36transform(xyz_wgs) == approx(xyz_os, rel=1.0e-5)
 
-@mark.xfail()
+#@mark.xfail()
 def test_WGS84toOSGB36():
     """Test WGS84toOSGB36."""
     lat_long_wgs = np.array([[geo.rad(52, 39, 28.71)],
@@ -66,7 +68,7 @@ def test_WGS84toOSGB36():
                                        True)) == approx(lat_long_os,
                                                         rel=1.0e-5)
 
-@mark.xfail()
+#@mark.xfail()
 def test_get_easting_northing_from_lat_long():
     """Test lat_long_to_easting_northing."""
     latitude = np.array([geo.rad(52,39,27.2531)])
@@ -76,6 +78,6 @@ def test_get_easting_northing_from_lat_long():
     n = 313177.270
 
     assert np.array(geo.get_easting_northing_from_lat_long(latitude,
-                                                           longitude)) \
+                                                           longitude, True)) \
                                      == approx(np.array((e,n)),
                                                rel=1.0e-5)
