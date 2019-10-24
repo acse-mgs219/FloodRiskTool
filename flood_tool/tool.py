@@ -112,30 +112,21 @@ class Tool(object):
         # inputcor: nparray of input points' coordinates
         # outputcor: nparray
         df = self.df_risk_file
+        df['prob_4band'] = pd.Categorical(df['prob_4band'], ["High", "Medium", "Low",
+                                                             "Very Low", "Zero"])
+        df = df.sort_values(by=['prob_4band'])
         cor1x = np.array(df.drop(['Y', 'prob_4band', 'radius'], axis=1))
         cor1y = np.array(df.drop(['X', 'prob_4band', 'radius'], axis=1))
         pro = np.array(df.drop(['X', 'Y', 'radius'], axis=1))
         r = np.array(df.drop(['X', 'Y', 'prob_4band'], axis=1))
         outputpro = []
-        # normalize
-        pro[pro == "High"] = 4
-        pro[pro == "Medium"] = 3
-        pro[pro == "Low"] = 2
-        pro[pro == "Very Low"] = 1
         for m, n in zip(easting, northing):
             r_relative = np.sqrt((cor1x - m) ** 2 + (cor1y - n) ** 2)
             judge = r_relative < r
-            highpro = 0
-            for i in range(pro[judge].shape[0]):
-                if pro[judge][i] > highpro:
-                    highpro = pro[judge][i]
-            outputpro.append(highpro)
-        outputpro = np.array(outputpro, dtype=object)
-        outputpro[outputpro == 4] = "High"
-        outputpro[outputpro == 3] = "Medium"
-        outputpro[outputpro == 2] = "Low"
-        outputpro[outputpro == 1] = "Very Low"
-        outputpro[outputpro == 0] = "No Risk"
+            if (len(pro[judge]) == 0):
+                outputpro.append("Zero")
+            else:
+                outputpro.append(pro[judge][0])
         return outputpro
 
 
@@ -169,7 +160,7 @@ class Tool(object):
         probsSort = pd.DataFrame({'Postcode': postcodes, 'Probability Band': probs})
         probsSort.set_index('Postcode', inplace=True)
         probsSort['Probability Band'] = pd.Categorical(probsSort['Probability Band'],
-                                                       ["High", "Medium", "Low", "Very Low", "No Risk"])
+                                                       ["High", "Medium", "Low", "Very Low", "Zero"])
         probsSort = probsSort.sort_values(by=['Probability Band', 'Postcode'])
         probsSort = probsSort[~probsSort.index.duplicated(keep='first')].dropna()
         return probsSort
@@ -225,7 +216,7 @@ class Tool(object):
         pro[pro == "Medium"] = 1 / 50
         pro[pro == "Low"] = 1 / 100
         pro[pro == "Very Low"] = 1 / 1000
-        pro[pro == "No Risk"] = 0.0
+        pro[pro == "Zero"] = 0.0
         flood_risk = self.cat_pst_values.loc[postcodes, 'Total Value'].values * pro.astype(float) * reduce_cost
         return np.array(flood_risk)
 
