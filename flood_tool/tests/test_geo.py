@@ -5,7 +5,7 @@ import copy
 import numpy as np
 from pytest import approx, mark
 
-import geo
+import .geo
 
 def test_rad():
     """Test rad function"""
