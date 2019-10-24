@@ -154,7 +154,11 @@ class Tool(object):
             data column is named `Probability Band`. Invalid postcodes and duplicates
             are removed.
         """
-        postcodes = [postcode.replace(' ', '').upper().strip() for postcode in postcodes]
+        # postcodes = [postcode.replace(' ', '').upper().strip() for postcode in postcodes]
+        postcodes = np.array(list(map(lambda p: np.char.upper(p) if len(p) == 7 else str(p).replace(' ', ''),
+                                      postcodes)))
+        index = np.unique(postcodes, return_index=True)[1]
+        postcodes = [postcodes[i] for i in index]
         latLongs = self.get_lat_long(postcodes)
         eastNorths = get_easting_northing_from_lat_long(latLongs[:, 0], latLongs[:, 1])
         probs = self.get_easting_northing_flood_probability(eastNorths[0], eastNorths[1])
@@ -240,7 +244,11 @@ class Tool(object):
             `Postcode` and the data column `Flood Risk`.
             Invalid postcodes and duplicates are removed.
         """
-        postcodes = [postcode.replace(' ', '').upper().strip() for postcode in postcodes]
+        # postcodes = [postcode.replace(' ', '').upper().strip() for postcode in postcodes]
+        postcodes = np.array(list(map(lambda p: np.char.upper(p) if len(p) == 7 else str(p).replace(' ', ''),
+                                      postcodes)))
+        index = np.unique(postcodes, return_index=True)[1]
+        postcodes = [postcodes[i] for i in index]
         latLongs = self.get_lat_long(postcodes)
         eastNorths = get_easting_northing_from_lat_long(latLongs[:, 0], latLongs[:, 1])
         probs = self.get_easting_northing_flood_probability(eastNorths[0], eastNorths[1])
