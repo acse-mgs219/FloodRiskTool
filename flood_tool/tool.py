@@ -160,7 +160,7 @@ class Tool(object):
         probsSort = pd.DataFrame({'Postcode': postcodes, 'Probability Band': probs})
         probsSort.set_index('Postcode', inplace=True)
         probsSort['Probability Band'] = pd.Categorical(probsSort['Probability Band'],
-                                                       ["High", "Medium", "Low", "Very Low", "No Risk"])
+                                                       ["High", "Medium", "Low", "Very Low", "Zero"])
         probsSort = probsSort.sort_values(by=['Probability Band', 'Postcode'])
         probsSort = probsSort[~probsSort.index.duplicated(keep='first')].dropna()
         return probsSort
