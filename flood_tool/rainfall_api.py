@@ -90,7 +90,7 @@ def rainfall_date(date):
     print('The maximum value among all the measurements is %d mm. Taken by station %s at %s.'%(maxValue,maxValueStationName,maxValueDateTime))
     nbStation=len(df.stationReference.unique().tolist())
    
-    print('Number of dateTime that has measurements: %d'%len(df.dateTime.unique().tolist()))
+    print('number of dateTime that has measurements: %d'%len(df.dateTime.unique().tolist()))
     print('Number of stations in total: %d'%(nbStation))
     
     dfgroup=df.groupby(['stationReference','station']).value.agg(['min','max','mean']).reset_index() #reset index
