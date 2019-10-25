@@ -8,17 +8,22 @@ This tool calculates flood probabilities and risks for postcodes in England.
 
 ### Installation Guide
 
+```
 language: python
-python
-  - "3.7"
+```
+  - python "3.7"
+```
 install:
+```
   - pip install -r requirements.txt
   - pip install -e
   - pip install pandas
   - pip install numpy
   - pip install requests
   - pip install matplotlib
+```
 script: 
+```
   - pip install pytest pytest-cov #install test framework
   - python -m pytest flood_tool --cov=flood_tool
   - pip install sphinx #for documentation
@@ -27,7 +32,11 @@ script:
 
 ### User instructions
 
-*to be written*
+This tool has capilities of:
+  - Obtaining flood probability bands and sorted results given list of UK postcodes
+  - Producing analysis of flood risk given list of UK postcodes
+  - For an input list of UK postcodes, by accessing Rainfall API to get the live rainfall data of a whole day, providing flood warning alerts of high risk area.
+  - Analyzing historical rainfall data across the UK of a specific date. (As an example, an analysis of Oct.6th's rainfall data is demonstrated)
 
 ### Documentation
 
