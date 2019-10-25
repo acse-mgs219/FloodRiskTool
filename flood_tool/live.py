@@ -16,9 +16,9 @@ __all__  = []
 LIVE_URL = "http://environment.data.gov.uk/flood-monitoring/id/stations"
 ARCHIVE_URL = "http://environment.data.gov.uk/flood-monitoring/archive/"
 
-t = Tool("resources/postcodes.csv", "resources/flood_probability.csv", "resources/property_value.csv")
-tests = pd.read_csv(r'resources/postcodes.csv')
-postcodes = tests.loc[0:10,'Postcode']
+#t = Tool("resources/postcodes.csv", "resources/flood_probability.csv", "resources/property_value.csv")
+#tests = pd.read_csv(r'resources/postcodes.csv')
+#postcodes = tests.loc[0:10,'Postcode']
 
 def station_value(station_ref):
     url = "https://environment.data.gov.uk/flood-monitoring/id/stations/"+str(station_ref)+"/readings?today"
@@ -36,8 +36,8 @@ def get_close_station_value(post_lat, post_lon, post_r = 10):
     output = station_value(station_ref.values[0,0])
     return output
 
-postcodes = [postcode.replace(' ', '').upper().strip() for postcode in postcodes]
-print(postcodes)
+#postcodes = [postcode.replace(' ', '').upper().strip() for postcode in postcodes]
+#print(postcodes)
 """for post in postcodes:
     post = [post]
     risk = t.get_sorted_annual_flood_risk(post)
