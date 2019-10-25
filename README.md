@@ -9,9 +9,8 @@ This tool calculates flood probabilities and risks for postcodes in England.
 ### Installation Guide
 
 ```
-language: python
+language: python "3.7"
 ```
-  - python "3.7"
 ```
 install:
 ```
