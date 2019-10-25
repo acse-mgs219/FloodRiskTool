@@ -8,7 +8,6 @@ This tool calculates flood probabilities and risks for postcodes in England.
 
 ### Installation Guide
 
-*
 language: python
 python
   - "3.7"
@@ -25,7 +24,6 @@ script:
   - pip install sphinx #for documentation
   - python -m sphinx docs docs/html
   - python -m score -v #also check scoring runs
-*
 
 ### User instructions
 
