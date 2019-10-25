@@ -6,7 +6,3 @@ pytest
 pytest-timeout
 folium
 requests
-json
-csv
-urllib
-shutil
