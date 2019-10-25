@@ -36,7 +36,12 @@ This tool has capilities of:
   - Producing analysis of flood risk given list of UK postcodes
   - For an input list of UK postcodes, by accessing Rainfall API to get the live rainfall data of a whole day, providing flood warning alerts of high risk area.
   - Analyzing historical rainfall data across the UK of a specific date. (As an example, an analysis of Oct.6th's rainfall data is demonstrated)
-
+```
+Landing Page:
+```
+  - Used HTML, CSS3, Javascript, Bootstrap
+  - Demonstrating user interface and introduction on the index.html website.
+  
 ### Documentation
 
 The code includes [Sphinx](https://www.sphinx-doc.org) documentation. On systems with Sphinx installed, this can be build by running
