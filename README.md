@@ -32,8 +32,8 @@ script:
 ### User instructions
 
 This tool has capilities of:
-  - Obtaining flood probability bands and sorted results given list of UK postcodes
-  - Producing analysis of flood risk given list of UK postcodes
+  - Obtaining flood probability bands and sorted results given a list of UK postcodes
+  - Producing analysis of flood risk given a list of UK postcodes
   - For an input list of UK postcodes, by accessing Rainfall API to get the live rainfall data of a whole day, providing flood warning alerts of high risk area.
   - Analyzing historical rainfall data across the UK of a specific date. (As an example, an analysis of Oct.6th's rainfall data is demonstrated)
 ```
