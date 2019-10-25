@@ -171,16 +171,16 @@ def WGS84toOSGB36(latitude, longitude, radians=False):
         longitude = rad(longitude)
         radians = True
     
-    Xwgs84=lat_long_to_xyz(latitude,longitude,radians,datum=wgs84) 
-    Xosgb36=WGS84toOSGB36transform(Xwgs84)
-    x=Xosgb36[0]
-    y=Xosgb36[1]
-    z=Xosgb36[2]
+    Xwgs84 = lat_long_to_xyz(latitude,longitude,radians,datum=wgs84) 
+    Xosgb36 = WGS84toOSGB36transform(Xwgs84)
+    x = Xosgb36[0]
+    y = Xosgb36[1]
+    z = Xosgb36[2]
 
     #transform the cartesan coor back to latitude&longitude under os datum
-
-    osLatitude,osLongitude=xyz_to_lat_long(x,y,z,True,datum=osgb36)
-    return np.array((osLatitude,osLongitude))
+    os_latitude, os_longitude = xyz_to_lat_long(x, y, z, True, datum=osgb36)
+    
+    return np.array((os_latitude, os_longitude))
 
 def get_easting_northing_from_lat_long(latitude, longitude, radians=False):
     """ Convert GPS (latitude, longitude) to OS (easting, northing).
@@ -208,15 +208,15 @@ def get_easting_northing_from_lat_long(latitude, longitude, radians=False):
     A guide to coordinate systems in Great Britain 
     (https://webarchive.nationalarchives.gov.uk/20081023180830/http://www.ordnancesurvey.co.uk/oswebsite/gps/information/coordinatesystemsinfo/guidecontents/index.html)
     """ 
+    
+    # Make sure the input is an np array and in the right coordinate system
     latitude = np.array(latitude)
     longitude = np.array(longitude)
     os_latitude, os_longitude = WGS84toOSGB36(latitude, longitude, radians)
-    #os_latitude, os_longitude = latitude, longitude
 
     # Set up variables to be used
     rho = osgb36.a*osgb36.F_0*(1-osgb36.e2)/((1-osgb36.e2*(sin(os_latitude))**2))**(3/2)
     nu = osgb36.a*osgb36.F_0/sqrt(1-osgb36.e2*sin(os_latitude)**2)
-    #print(nu)
     nie = nu/rho-1
     
     n = osgb36.n
@@ -224,7 +224,6 @@ def get_easting_northing_from_lat_long(latitude, longitude, radians=False):
     -(3*n+3*(n)**2+(21/8)*(n)**3)*sin(os_latitude-osgb36.phi_0)*cos(os_latitude+osgb36.phi_0)
     +(15/8*(n)**2+15/8*(n)**3)*sin(2*(os_latitude-osgb36.phi_0))*cos(2*os_latitude+2*osgb36.phi_0)
     -(35/24*(n)**3)*sin(3*os_latitude-3*osgb36.phi_0)*cos(3*os_latitude+3*osgb36.phi_0))
-    #print(M)
 
     # one
     one = M+osgb36.N_0
