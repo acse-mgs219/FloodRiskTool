@@ -8,8 +8,8 @@ import csv
 import matplotlib.pyplot as plt
 import urllib.request
 import shutil
-from geo import *
-from tool import *
+from .geo import *
+from .tool import *
 
 __all__  = []
 
